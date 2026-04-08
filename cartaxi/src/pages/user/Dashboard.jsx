@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { useApp } from "../../context/AppContext";
-import { StatusBadge, TierBadge, Toggle, Avatar, Stars } from "../../components/ui";
- 
+import { StatusBadge, TierBadge, Avatar } from "../../components/ui";
+
 // ─── USER DASHBOARD ────────────────────────────────────────────────────────────
 export function UserDashboard() {
-  const { bookings, cars, setPage, currentUser } = useApp();
+  const { bookings = [], cars = [], setPage, currentUser } = useApp();
+  
   const myBookings = (bookings || []).slice(0, 3);
   const availCars = (cars || []).filter(c => c.status === "available").slice(0, 3);
- 
+
+  const totalSpent = (bookings || []).reduce((acc, b) => acc + (b.total_price || 0), 0);
+  const totalKm = (bookings || []).reduce((acc, b) => acc + (b.distance_km || 0), 0);
+
   return (
     <div className="page">
       {/* Hero */}
@@ -24,7 +28,7 @@ export function UserDashboard() {
             <span style={{ fontSize: 12, color: "var(--accent2)", fontWeight: 600 }}>GPS ACTIVE · Vijayawada</span>
           </div>
           <div style={{ fontFamily: "var(--font-head)", fontSize: 30, fontWeight: 700, marginBottom: 6, letterSpacing: "-0.5px" }}>
-            Hello, {currentUser?.username || "Priya"} 👋
+            Hello, {currentUser?.first_name || currentUser?.username || "Rider"} 👋
           </div>
           <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24 }}>
             Where are you headed today? {availCars.length} cars available near you.
@@ -37,23 +41,23 @@ export function UserDashboard() {
           </div>
         </div>
       </div>
- 
+
       {/* Stats */}
       <div className="grid3" style={{ marginBottom: 24 }}>
         {[
-          { icon: "🚗", label: "Total Rides", value: "18", sub: "+3 this month" },
-          { icon: "💰", label: "Total Spent", value: "₹6,742", sub: "Lifetime" },
-          { icon: "📍", label: "km Travelled", value: "387", sub: "Across all rides" },
+          { icon: "🚗", label: "Total Rides", value: bookings.length, sub: "All time" },
+          { icon: "💰", label: "Total Spent", value: `₹${totalSpent.toLocaleString("en-IN")}`, sub: "Including tax" },
+          { icon: "📍", label: "km Travelled", value: totalKm.toLocaleString(), sub: "Across all rides" },
         ].map((s, i) => (
           <div key={s.label} className={`card stat-card animate-in delay-${i + 1}`} style={{ padding: 20 }}>
             <div style={{ fontSize: 24 }}>{s.icon}</div>
             <div style={{ fontSize: 11, color: "var(--text2)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 10 }}>{s.label}</div>
             <div style={{ fontFamily: "var(--font-head)", fontSize: 28, fontWeight: 700, marginTop: 4, letterSpacing: "-0.5px" }}>{s.value}</div>
-            <div style={{ fontSize: 12, color: "var(--accent2)", marginTop: 4 }}>↑ {s.sub}</div>
+            <div style={{ fontSize: 12, color: "var(--accent2)", marginTop: 4 }}>📈 {s.sub}</div>
           </div>
         ))}
       </div>
- 
+
       {/* Available Cars Preview */}
       <div className="card animate-in delay-2" style={{ padding: 24, marginBottom: 24 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -67,40 +71,52 @@ export function UserDashboard() {
               onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
             >
               <div style={{ height: 100, overflow: "hidden", background: "var(--surface3)", position: "relative" }}>
-                {car.image ? <img src={car.image} alt={car.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: 36 }}>{car.emoji}</div>}
+                {car.image ? <img src={car.image} alt={car.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: 36 }}>🚗</div>}
                 <div style={{ position: "absolute", bottom: 6, right: 6 }}><TierBadge tier={car.tier} /></div>
               </div>
               <div style={{ padding: 12 }}>
                 <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>{car.name}</div>
-                <div style={{ fontSize: 11, color: "var(--text2)" }}>{car.type} · ₹{car.pricePerKm}/km</div>
+                <div style={{ fontSize: 11, color: "var(--text2)" }}>{car.seats} Seats · ₹{car.price_per_km}/km</div>
               </div>
             </div>
           ))}
+          {availCars.length === 0 && <div style={{ color: "var(--text3)", fontSize: 13, padding: 20 }}>No cars available right now.</div>}
         </div>
       </div>
- 
+
       {/* Recent Rides */}
       <div className="card animate-in delay-3" style={{ padding: 24 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div className="section-title" style={{ marginBottom: 0 }}>Recent Rides</div>
           <button className="btn-ghost btn-sm" onClick={() => setPage("mybookings")}>View all →</button>
         </div>
-        {myBookings.map(b => (
-          <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: "1px solid var(--border)" }}>
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: "var(--surface2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🚗</div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>{b.car}</div>
-                <div style={{ fontSize: 12, color: "var(--text2)" }}>📍 {b.from} → {b.to}</div>
-                <div style={{ fontSize: 11, color: "var(--text3)" }}>🗓 {b.date} · {b.time}</div>
+        {myBookings.map(b => {
+          const carName = b.car_details?.name || "Uber Go";
+          const pickup = (b.pickup_location || "Source").split(",")[0];
+          const dropoff = (b.dropoff_location || "Destination").split(",")[0];
+          const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString("en-IN") : "Today";
+          const price = Number(b.total_price || 0);
+
+          return (
+            <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <div style={{ width: 44, height: 44, borderRadius: 10, background: "var(--surface2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+                  {b.car_details?.image ? <img src={b.car_details.image} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 10 }} /> : "🚗"}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>{carName}</div>
+                  <div style={{ fontSize: 12, color: "var(--text2)" }}>📍 {pickup} → {dropoff}</div>
+                  <div style={{ fontSize: 11, color: "var(--text3)" }}>🗓 {dateStr}</div>
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <StatusBadge s={b.status} />
+                <div style={{ fontWeight: 800, fontSize: 15, color: "var(--accent)", marginTop: 4 }}>₹{price.toLocaleString("en-IN")}</div>
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <StatusBadge s={b.status} />
-              <div style={{ fontWeight: 800, fontSize: 15, color: "var(--accent)", marginTop: 4 }}>₹{b.amount.toLocaleString("en-IN")}</div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
+        {myBookings.length === 0 && <div style={{ color: "var(--text3)", fontSize: 13, textAlign: "center", padding: 20 }}>No ride history yet.</div>}
       </div>
     </div>
   );

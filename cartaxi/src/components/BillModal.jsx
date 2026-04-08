@@ -4,11 +4,26 @@ export default function BillModal({ booking, onClose }) {
   const printRef = useRef();
   if (!booking) return null;
 
-  const tax = Math.round(booking.amount * 0.05);
+  // Django API fields
+  const amount = Number(booking.total_price || 0);
+  const tax = Math.round(amount * 0.05);
   const platformFee = 30;
-  const total = booking.amount + tax + platformFee;
-  const pricePerKm = Math.round(booking.amount / booking.km);
+  const total = amount + tax + platformFee;
+  
+  const km = Number(booking.distance_km || 1);
+  const pricePerKm = Math.round(amount / km);
+  
+  const bookingDate = booking.created_at ? new Date(booking.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }) : "Today";
   const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
+  const time = booking.created_at ? new Date(booking.created_at).toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' }) : "N/A";
+
+  const carName = booking.car_details?.name || booking.car || "CarTaxi";
+  const driverName = booking.car_details?.driver_name || "Assigned Driver";
+  const driverPhone = booking.car_details?.driver_phone || "N/A";
+  const userName = booking.user_name || "Valued Customer";
+  const userPhone = booking.user_phone || "N/A";
+  const pickup = booking.pickup_location || "Source";
+  const dropoff = booking.dropoff_location || "Destination";
 
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
@@ -32,7 +47,6 @@ export default function BillModal({ booking, onClose }) {
         td:last-child { text-align: right; font-weight: 600; }
         .total-row { border-top: 2px solid #0A0E1A; margin-top: 8px; padding-top: 12px; display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; }
         .footer { text-align: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid #E5E7EB; font-size: 12px; color: #6B7280; }
-        .qr-placeholder { width: 80px; height: 80px; background: #F3F4F6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
       </style></head><body>
       <div class="invoice">
         <div class="header">
@@ -43,8 +57,8 @@ export default function BillModal({ booking, onClose }) {
             <div class="badge">TAX INVOICE</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:22px;font-weight:800;color:#F59E0B;">${booking.id}</div>
-            <div style="font-size:12px;color:#6B7280;margin-top:4px;">Date: ${booking.date}</div>
+            <div style="font-size:22px;font-weight:800;color:#F59E0B;">#${booking.id}</div>
+            <div style="font-size:12px;color:#6B7280;margin-top:4px;">Date: ${bookingDate}</div>
             <div style="font-size:12px;color:#6B7280;">Printed: ${today}</div>
           </div>
         </div>
@@ -52,26 +66,26 @@ export default function BillModal({ booking, onClose }) {
         <div class="info-grid">
           <div class="info-section">
             <h3>Customer Details</h3>
-            <div style="font-weight:600;font-size:15px;">${booking.user}</div>
-            <div style="color:#6B7280;font-size:13px;">📞 ${booking.userPhone || "N/A"}</div>
+            <div style="font-weight:600;font-size:15px;">${userName}</div>
+            <div style="color:#6B7280;font-size:13px;">📞 ${userPhone}</div>
           </div>
           <div class="info-section">
             <h3>Driver & Vehicle</h3>
-            <div style="font-weight:600;font-size:15px;">${booking.driver}</div>
-            <div style="color:#6B7280;font-size:13px;">📞 ${booking.driverPhone || "N/A"}</div>
-            <div style="color:#6B7280;font-size:13px;">🚗 ${booking.car}</div>
+            <div style="font-weight:600;font-size:15px;">${driverName}</div>
+            <div style="color:#6B7280;font-size:13px;">📞 ${driverPhone}</div>
+            <div style="color:#6B7280;font-size:13px;">🚗 ${carName}</div>
           </div>
         </div>
 
         <div class="route-box">
           <div style="display:flex;gap:16px;align-items:center;">
-            <div style="flex:1;"><div style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Pickup</div><div style="font-weight:600;margin-top:3px;">📍 ${booking.from}</div>${booking.fromKm ? `<div style="font-size:12px;color:#9CA3AF;">ODO: ${booking.fromKm} km</div>` : ""}</div>
-            <div style="font-size:24px;">→</div>
-            <div style="flex:1;"><div style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Drop</div><div style="font-weight:600;margin-top:3px;">🏁 ${booking.to}</div>${booking.toKm ? `<div style="font-size:12px;color:#9CA3AF;">ODO: ${booking.toKm} km</div>` : ""}</div>
+            <div style="flex:1;"><div style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Pickup</div><div style="font-weight:600;margin-top:3px;">📍 ${pickup.split(',')[0]}</div></div>
+            <div style={{fontSize:"24px"}}>→</div>
+            <div style="flex:1;"><div style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Drop</div><div style="font-weight:600;margin-top:3px;">🏁 ${dropoff.split(',')[0]}</div></div>
           </div>
           <div style="margin-top:12px;padding-top:12px;border-top:1px solid #E5E7EB;display:flex;gap:24px;font-size:13px;">
-            <span><strong>Distance:</strong> ${booking.km} km</span>
-            <span><strong>Pickup Time:</strong> ${booking.time || "N/A"}</span>
+            <span><strong>Distance:</strong> ${km} km</span>
+            <span><strong>Time:</strong> ${time}</span>
             <span><strong>Rate:</strong> ₹${pricePerKm}/km</span>
           </div>
         </div>
@@ -79,15 +93,15 @@ export default function BillModal({ booking, onClose }) {
         <table>
           <thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
           <tbody>
-            <tr><td>Base Fare (${booking.km} km × ₹${pricePerKm})</td><td>₹${booking.amount.toLocaleString("en-IN")}</td></tr>
-            <tr><td>GST @ 5% (CGST 2.5% + SGST 2.5%)</td><td>₹${tax}</td></tr>
+            <tr><td>Base Fare (${km} km × ₹${pricePerKm})</td><td>₹${amount.toLocaleString("en-IN")}</td></tr>
+            <tr><td>GST @ 5% (CGST 2.5% + SGST 2.5%)</td><td>₹${tax.toLocaleString("en-IN")}</td></tr>
             <tr><td>Platform Convenience Fee</td><td>₹${platformFee}</td></tr>
           </tbody>
         </table>
         <div class="total-row"><span>Total Amount</span><span>₹${total.toLocaleString("en-IN")}</span></div>
 
         <div style="margin-top:20px;background:#F0FDF4;border-radius:8px;padding:12px 16px;font-size:13px;">
-          <strong>Payment Mode:</strong> Cash on Delivery &nbsp;|&nbsp; <strong>Status:</strong> ✅ Paid
+          <strong>Payment Mode:</strong> Cash/UPI &nbsp;|&nbsp; <strong>Status:</strong> ✅ Paid
         </div>
 
         <div class="footer">
@@ -119,8 +133,8 @@ export default function BillModal({ booking, onClose }) {
                 <div style={{ fontSize: 11, color: "#666", marginTop: 2 }}>Vijayawada | GST: 37AAACR1234A1Z5</div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontWeight: 800, fontSize: 16, color: "#F59E0B" }}>{booking.id}</div>
-                <div style={{ fontSize: 11, color: "#888" }}>{booking.date}</div>
+                <div style={{ fontWeight: 800, fontSize: 16, color: "#F59E0B" }}>#{booking.id}</div>
+                <div style={{ fontSize: 11, color: "#888" }}>{bookingDate}</div>
                 <div style={{ background: "#FEF3C7", color: "#92400E", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, marginTop: 4 }}>PAID</div>
               </div>
             </div>
@@ -129,32 +143,32 @@ export default function BillModal({ booking, onClose }) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16, fontSize: 13 }}>
             <div>
               <div style={{ fontWeight: 700, marginBottom: 4, color: "#888", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>Customer</div>
-              <div style={{ fontWeight: 700 }}>{booking.user}</div>
-              <div style={{ color: "#888" }}>📞 {booking.userPhone || "N/A"}</div>
+              <div style={{ fontWeight: 700 }}>{userName}</div>
+              <div style={{ color: "#888" }}>📞 {userPhone}</div>
             </div>
             <div>
               <div style={{ fontWeight: 700, marginBottom: 4, color: "#888", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>Driver</div>
-              <div style={{ fontWeight: 700 }}>{booking.driver}</div>
-              <div style={{ color: "#888" }}>📞 {booking.driverPhone || "N/A"}</div>
-              <div style={{ color: "#888" }}>🚗 {booking.car}</div>
+              <div style={{ fontWeight: 700 }}>{driverName}</div>
+              <div style={{ color: "#888" }}>📞 {driverPhone}</div>
+              <div style={{ color: "#888" }}>🚗 {carName}</div>
             </div>
           </div>
 
           <div style={{ background: "#F9FAFB", borderRadius: 8, padding: 14, marginBottom: 16, fontSize: 13 }}>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <div style={{ flex: 1 }}><div style={{ color: "#888", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>From</div><div style={{ fontWeight: 600, marginTop: 2 }}>📍 {booking.from}</div></div>
+              <div style={{ flex: 1 }}><div style={{ color: "#888", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>From</div><div style={{ fontWeight: 600, marginTop: 2 }}>📍 {pickup.split(',')[0]}</div></div>
               <div style={{ fontSize: 20 }}>→</div>
-              <div style={{ flex: 1 }}><div style={{ color: "#888", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>To</div><div style={{ fontWeight: 600, marginTop: 2 }}>🏁 {booking.to}</div></div>
+              <div style={{ flex: 1 }}><div style={{ color: "#888", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>To</div><div style={{ fontWeight: 600, marginTop: 2 }}>🏁 {dropoff.split(',')[0]}</div></div>
             </div>
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #E5E7EB", fontSize: 12, color: "#666" }}>
-              Distance: <strong>{booking.km} km</strong> &nbsp;·&nbsp; Rate: <strong>₹{pricePerKm}/km</strong> &nbsp;·&nbsp; Time: <strong>{booking.time || "N/A"}</strong>
+              Distance: <strong>{km} km</strong> &nbsp;·&nbsp; Rate: <strong>₹{pricePerKm}/km</strong> &nbsp;·&nbsp; Time: <strong>{time}</strong>
             </div>
           </div>
 
           <table className="pdf-table">
             <tbody>
-              <tr><td>Base Fare ({booking.km} km × ₹{pricePerKm})</td><td>₹{booking.amount.toLocaleString("en-IN")}</td></tr>
-              <tr><td>GST @ 5%</td><td>₹{tax}</td></tr>
+              <tr><td>Base Fare ({km} km × ₹{pricePerKm})</td><td>₹{amount.toLocaleString("en-IN")}</td></tr>
+              <tr><td>GST @ 5%</td><td>₹{tax.toLocaleString("en-IN")}</td></tr>
               <tr><td>Platform Fee</td><td>₹{platformFee}</td></tr>
             </tbody>
           </table>
