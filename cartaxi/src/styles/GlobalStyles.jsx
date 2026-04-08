@@ -201,8 +201,29 @@ export const GlobalStyle = () => (
     .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); margin-right: 6px; animation: blink 1.5s infinite; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
+    /* AUTH PAGES */
+    .auth-page { display: flex; min-height: 100vh; overflow: hidden; background: var(--primary-light); }
+    .auth-left { flex: 1; position: relative; padding: 80px 10%; display: flex; flex-direction: column; justify-content: center; }
+    .auth-left-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 40px 40px; z-index: 0; mask-image: radial-gradient(circle at center, black 40%, transparent 100%); }
+    .auth-brand { font-family: var(--font-head); font-size: 64px; font-weight: 800; color: var(--accent); letter-spacing: -2px; line-height: 1; margin-bottom: 24px; text-shadow: 0 4px 20px rgba(245,158,11,0.2); }
+    .auth-tagline { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 420px; }
+    .auth-right { width: 480px; background: var(--primary-card); padding: 50px 60px; display: flex; flex-direction: column; justify-content: center; position: relative; box-shadow: -10px 0 40px rgba(0,0,0,0.5); z-index: 10; border-left: 1px solid var(--border); }
+    .auth-title { font-family: var(--font-head); font-size: 38px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -1px; /* Emulate the stretched look */ transform: scaleX(1.1); transform-origin: left; }
+    .auth-sub { font-size: 13px; color: var(--text2); margin-bottom: 32px; }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 10px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    
+    .divider { display: flex; align-items: center; text-align: center; color: var(--text3); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; margin: 32px 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
+    .divider::before { margin-right: 20px; }
+    .divider::after { margin-left: 20px; }
+
     /* ANIMATIONS */
     .animate-in { animation: fadeInUp 0.4s ease both; }
     .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
   `}</style>
 );
