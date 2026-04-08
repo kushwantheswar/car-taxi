@@ -143,10 +143,10 @@ export default function PlaceOrder() {
   };
 
   const confirmOrder = async () => {
-    if (!selected) return;
+    if (!selected || !currentUser) return;
     setSubmitting(true);
     const booking = {
-      user: 1,
+      user: currentUser.id,
       car: selected.id,
       pickup_location: fromText,
       dropoff_location: toText,

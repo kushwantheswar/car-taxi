@@ -63,8 +63,14 @@ class CarViewSet(viewsets.ModelViewSet):
         return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
 
 class BookingViewSet(viewsets.ModelViewSet):
-    queryset = Booking.objects.all().order_by('-created_at')
     serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        queryset = Booking.objects.all().order_by('-created_at')
+        user_id = self.request.query_params.get('user')
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+        return queryset
 
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):

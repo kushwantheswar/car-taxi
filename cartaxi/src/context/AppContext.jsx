@@ -30,9 +30,14 @@ export function AppProvider({ children }) {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
+      // If user, filter bookings by their ID. Admins get all.
+      const bookingUrl = (role === "user" && currentUser) 
+        ? `${API_URL}/bookings/?user=${currentUser.id}` 
+        : `${API_URL}/bookings/`;
+
       const [carsRes, bookingsRes, driversRes] = await Promise.all([
         axios.get(`${API_URL}/cars/`),
-        axios.get(`${API_URL}/bookings/`),
+        axios.get(bookingUrl),
         axios.get(`${API_URL}/drivers/`)
       ]);
       setCars(carsRes.data);
@@ -43,7 +48,7 @@ export function AppProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [role, currentUser]);
 
   // Fetch data whenever role is set
   useEffect(() => {
