@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useApp } from "../../context/AppContext";
  
-const AuthLeft = ({ title, subtitle }) => (
+export const AuthLeft = ({ title, subtitle }) => (
   <div className="auth-left">
     <div className="auth-left-grid" />
     <div style={{ position: "relative", zIndex: 1 }}>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BOOKINGS } from "../../data/mockData";
-import { StatusBadge } from "../../components/ui/Badge";
+import { StatusBadge, Avatar } from "../../components/ui/index.jsx";
+import { useApp } from "../../context/AppContext.jsx";
 
 // ─── ADMIN BOOKINGS ────────────────────────────────────────────────────────────
 export function AdminBookings() {

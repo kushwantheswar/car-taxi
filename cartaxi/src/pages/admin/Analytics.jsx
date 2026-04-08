@@ -1,11 +1,14 @@
+import React from "react";
+import { useApp } from "../../context/AppContext.jsx";
+import { REVENUE_DATA } from "../../data/mockData";
+
 // ─── ANALYTICS PAGE ────────────────────────────────────────────────────────────
 export function AnalyticsPage() {
-  // FIX: Updated context variables to match Dealer System
-  const { orders, products, suppliers } = useApp(); 
+  const { bookings, cars, drivers } = useApp(); 
   
   const totalRevenue = REVENUE_DATA.reduce((s, d) => s + d.revenue, 0);
-  const totalOrders = REVENUE_DATA.reduce((s, d) => s + (d.bookings || 0), 0); // Kept 'bookings' key for data compatibility, labeled as Orders
-  const totalUnits = REVENUE_DATA.reduce((s, d) => s + (d.km || 0), 0); // Kept 'km' key for data compatibility, labeled as Units
+  const totalBookings = REVENUE_DATA.reduce((s, d) => s + (d.bookings || 0), 0); 
+  const totalDistance = REVENUE_DATA.reduce((s, d) => s + (d.km || 0), 0); 
  
   const BarChart = ({ data }) => {
     const max = Math.max(...data.map(d => d.revenue));
@@ -32,8 +35,8 @@ export function AnalyticsPage() {
       <div className="grid3" style={{ marginBottom: 24 }}>
         {[
           { l: "Total Revenue", v: `₹${(totalRevenue / 1000).toFixed(0)}K`, sub: "+12% vs last period", c: "var(--accent)" },
-          { l: "Total Orders", v: totalOrders, sub: "Avg 33/day", c: "var(--accent2)" }, // Updated Label
-          { l: "Units Sold", v: totalUnits.toLocaleString(), sub: "Across all products", c: "#60A5FA" }, // Updated Label
+          { l: "Total Bookings", v: totalBookings, sub: "Avg 33/day", c: "var(--accent2)" },
+          { l: "Total Distance", v: `${totalDistance.toLocaleString()} km`, sub: "Across all rides", c: "#60A5FA" }, 
         ].map((s, i) => (
           <div key={s.l} className={`card stat-card animate-in delay-${i + 1}`} style={{ padding: 24 }}>
             <div style={{ fontSize: 11, color: "var(--text2)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.l}</div>
@@ -49,10 +52,10 @@ export function AnalyticsPage() {
           <BarChart data={REVENUE_DATA} />
         </div>
         <div className="card animate-in delay-3" style={{ padding: 24 }}>
-          <div className="section-title">Order Status Distribution</div> {/* Updated Label */}
+          <div className="section-title">Booking Status Distribution</div>
           {["completed", "active", "pending", "cancelled"].map(s => {
-            const count = orders.filter(o => o.status === s).length; // Updated bookings -> orders
-            const pct = orders.length ? Math.round((count / orders.length) * 100) : 0; // Updated bookings -> orders
+            const count = bookings.filter(b => b.status === s).length;
+            const pct = bookings.length ? Math.round((count / bookings.length) * 100) : 0;
             const colors = { completed: "var(--accent2)", active: "#60A5FA", pending: "var(--accent)", cancelled: "var(--danger)" };
             return (
               <div key={s} style={{ marginBottom: 14 }}>
@@ -70,12 +73,12 @@ export function AnalyticsPage() {
       </div>
  
       <div className="card animate-in delay-3" style={{ padding: 24 }}>
-        <div className="section-title">Top Performing Products</div> {/* Updated Label */}
+        <div className="section-title">Top Performing Cars</div> 
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Product</th><th>Tier</th><th>Supplier</th><th>Price/Unit</th><th>Sold</th></tr></thead> {/* Updated Headers */}
+            <thead><tr><th>Car</th><th>Tier</th><th>Driver</th><th>Price/Km</th><th>Popularity</th></tr></thead> 
             <tbody>
-              {products.slice(0, 5).map((p, i) => ( // Updated cars -> products
+              {cars.slice(0, 5).map((p, i) => ( 
                 <tr key={p.id}>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -86,8 +89,8 @@ export function AnalyticsPage() {
                     </div>
                   </td>
                   <td>{p.tier}</td>
-                  <td>{p.supplier}</td> {/* Updated driver -> supplier */}
-                  <td style={{ fontWeight: 700, color: "var(--accent)" }}>₹{p.price}</td> {/* Updated pricePerKm -> price */}
+                  <td>{p.driver}</td> 
+                  <td style={{ fontWeight: 700, color: "var(--accent)" }}>₹{p.pricePerKm}</td> 
                   <td>
                     <div style={{ height: 6, width: 80, borderRadius: 4, background: "var(--surface3)", overflow: "hidden" }}>
                       <div style={{ width: `${90 - i * 12}%`, height: "100%", background: "var(--accent)", borderRadius: 4 }} />
