@@ -110,7 +110,7 @@ function MapRouting({ fromCoord, toCoord, onResult }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PlaceOrder() {
-  const { cars, addBooking, setBill, showNotification, fetchData } = useApp();
+  const { cars, addBooking, setBill, showNotification, fetchData, currentUser } = useApp();
 
   const [step, setStep] = useState(1);
   const [filter, setFilter] = useState("all");
