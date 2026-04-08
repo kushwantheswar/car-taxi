@@ -8,13 +8,26 @@ export function DriversPage() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", license: "", licenseExpiry: "", carId: "", address: "", age: "" });
  
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!form.name || !form.phone) { showNotification("Name and phone are required", "error"); return; }
-    const assignedCar = cars.find(c => c.id === Number(form.carId));
-    addDriver({ ...form, car: assignedCar?.name || "Unassigned", status: "available", joinDate: new Date().toISOString().slice(0, 10) });
-    setShowModal(false);
-    setForm({ name: "", phone: "", email: "", license: "", licenseExpiry: "", carId: "", address: "", age: "" });
-    showNotification(`Driver ${form.name} added successfully!`, "success");
+    
+    // We send data mapped to the new DriverProfile model fields
+    const payload = {
+      full_name: form.name,
+      phone: form.phone,
+      email: form.email || null,
+      age: form.age ? Number(form.age) : null,
+      license_no: form.license || null,
+      license_expiry: form.licenseExpiry || null,
+      address: form.address || null,
+      is_available: true
+    };
+
+    const result = await addDriver(payload);
+    if (result) {
+      setShowModal(false);
+      setForm({ name: "", phone: "", email: "", license: "", licenseExpiry: "", carId: "", address: "", age: "" });
+    }
   };
  
   return (
@@ -52,17 +65,17 @@ export function DriversPage() {
                 <tr key={d.id}>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <Avatar name={d.name} size={38} />
+                      <Avatar name={d.full_name || d.name} size={38} />
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 14 }}>{d.name || d.user_name}</div>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{d.full_name || d.name}</div>
                         <div style={{ fontSize: 12, color: "var(--accent)", fontWeight: 600 }}>📞 {d.phone}</div>
-                        {(d.email || d.user_email) && <div style={{ fontSize: 11, color: "var(--text2)" }}>✉ {d.email || d.user_email}</div>}
+                        {d.email && <div style={{ fontSize: 11, color: "var(--text2)" }}>✉ {d.email}</div>}
                       </div>
                     </div>
                   </td>
                   <td>
-                    <div style={{ fontSize: 13, fontWeight: 600 }}>{d.license}</div>
-                    {d.licenseExpiry && <div style={{ fontSize: 11, color: new Date(d.licenseExpiry) < new Date() ? "var(--danger)" : "var(--text2)" }}>Exp: {d.licenseExpiry}</div>}
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{d.license_no || d.license}</div>
+                    {d.license_expiry && <div style={{ fontSize: 11, color: new Date(d.license_expiry) < new Date() ? "var(--danger)" : "var(--text2)" }}>Exp: {d.license_expiry}</div>}
                   </td>
                   <td style={{ fontSize: 13 }}>{d.car}</td>
                   <td><Stars rating={d.rating} /></td>

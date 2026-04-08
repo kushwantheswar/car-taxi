@@ -106,10 +106,16 @@ export function AppProvider({ children }) {
   // ── Car Functions ──
   const addCar = useCallback(async (car) => {
     try {
+      setLoading(true);
       const res = await axios.post(`${API_URL}/cars/`, car);
       setCars(prev => [...prev, res.data]);
       showNotification("Car added successfully!");
-    } catch (e) { showNotification("Failed to add car", "error"); }
+      return res.data;
+    } catch (e) {
+      console.error("Add car error:", e.response?.data || e.message);
+      showNotification(e.response?.data?.detail || "Failed to add car to fleet", "error");
+      return null;
+    } finally { setLoading(false); }
   }, [showNotification]);
 
   const removeCar = useCallback(async (id) => {
@@ -130,7 +136,7 @@ export function AppProvider({ children }) {
   // ── Booking Functions ──
   const addBooking = useCallback(async (booking) => {
     try {
-      // Always use the logged-in user's actual ID
+      setLoading(true);
       const userId = currentUser?.id || 1;
       const res = await axios.post(`${API_URL}/bookings/`, { ...booking, user: userId });
       setBookings(prev => [res.data, ...prev]);
@@ -139,7 +145,7 @@ export function AppProvider({ children }) {
     } catch (e) {
       showNotification("Booking failed – check server connection", "error");
       return null;
-    }
+    } finally { setLoading(false); }
   }, [showNotification, currentUser]);
 
   const updateBookingStatus = useCallback(async (id, status) => {
@@ -152,17 +158,25 @@ export function AppProvider({ children }) {
   // ── Driver Functions ──
   const addDriver = useCallback(async (driver) => {
     try {
+      setLoading(true);
       const res = await axios.post(`${API_URL}/drivers/`, driver);
       setDrivers(prev => [...prev, res.data]);
-    } catch (e) {}
-  }, []);
+      showNotification("Driver added successfully!");
+      return res.data;
+    } catch (e) {
+      console.error("Add driver error:", e.response?.data || e.message);
+      showNotification("Failed to add driver profile", "error");
+      return null;
+    } finally { setLoading(false); }
+  }, [showNotification]);
 
   const removeDriver = useCallback(async (id) => {
     try {
       await axios.delete(`${API_URL}/drivers/${id}/`);
       setDrivers(prev => prev.filter(d => d.id !== id));
-    } catch (e) {}
-  }, []);
+      showNotification("Driver removed", "info");
+    } catch (e) { showNotification("Failed to remove driver", "error"); }
+  }, [showNotification]);
 
   return (
     <AppContext.Provider value={{

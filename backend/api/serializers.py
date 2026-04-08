@@ -7,13 +7,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'role', 'phone')
 
 class DriverProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
     class Meta:
         model = DriverProfile
         fields = '__all__'
 
 class CarSerializer(serializers.ModelSerializer):
-    driver_name = serializers.CharField(source='driver.user.username', read_only=True)
+    driver_name = serializers.CharField(source='driver.full_name', read_only=True)
 
     class Meta:
         model = Car

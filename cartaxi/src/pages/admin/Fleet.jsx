@@ -2,16 +2,28 @@ import React, { useState } from "react";
 import { useApp } from "../../context/AppContext";
 import { TierBadge } from "../../components/ui";
 
+const CAR_DATA = {
+  Toyota: ["Innova Crysta", "Fortuner", "Camry", "Glanza"],
+  Suzuki: ["Swift", "Dzire", "Ertiga", "Grand Vitara"],
+  Mahindra: ["XUV700", "Scorpio-N", "Thar", "Bolero Neo"],
+  Tata: ["Nexon", "Harrier", "Safari", "Altroz"],
+  Hyundai: ["Creta", "Verna", "Venue", "i20"],
+  Other: ["Standard Sedan", "Premium SUV", "Luxury Limo"]
+};
+
 export default function FleetManagement() {
   const { cars, addCar, removeCar, updateCarStatus, showNotification } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newCar, setNewCar] = useState({ name: "", price_per_km: "", seats: 4, tier: "standard", image: "" });
+  const [newCar, setNewCar] = useState({ brand: "", model: "", price_per_km: "", seats: 4, tier: "standard", image: "" });
 
   const handleAddCar = (e) => {
     e.preventDefault();
-    if (!newCar.name || !newCar.price_per_km) { showNotification("Please fill Car Name and Price/Km", "error"); return; }
+    if (!newCar.brand || !newCar.model || !newCar.price_per_km) { 
+      showNotification("Please fill all required fields", "error"); return; 
+    }
     addCar({
-      name: newCar.name,
+      brand: newCar.brand,
+      model: newCar.model,
       price_per_km: Number(newCar.price_per_km),
       seats: Number(newCar.seats),
       tier: newCar.tier,
@@ -19,7 +31,7 @@ export default function FleetManagement() {
       status: "available"
     });
     setShowAddModal(false);
-    setNewCar({ name: "", price_per_km: "", seats: 4, tier: "standard", image: "" });
+    setNewCar({ brand: "", model: "", price_per_km: "", seats: 4, tier: "standard", image: "" });
   };
 
   const statusColor = { available: "var(--accent2)", on_trip: "#60A5FA", unavailable: "var(--danger)" };
@@ -118,8 +130,18 @@ export default function FleetManagement() {
             </div>
             <form onSubmit={handleAddCar}>
               <div className="form-group">
-                <label>Car Name *</label>
-                <input placeholder="e.g. Toyota Innova Crysta" value={newCar.name} onChange={e => setNewCar({...newCar, name: e.target.value})} />
+                <label>Car Brand *</label>
+                <select value={newCar.brand} onChange={e => setNewCar({...newCar, brand: e.target.value, model: ""})}>
+                  <option value="">-- Select Brand --</option>
+                  {Object.keys(CAR_DATA).map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Car Model *</label>
+                <select value={newCar.model} onChange={e => setNewCar({...newCar, model: e.target.value})} disabled={!newCar.brand}>
+                  <option value="">-- Select Model --</option>
+                  {newCar.brand && CAR_DATA[newCar.brand].map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
               </div>
               <div className="form-row">
                 <div className="form-group">

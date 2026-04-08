@@ -11,16 +11,27 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
 
 class DriverProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='driver_profile')
-    is_available = models.BooleanField(default=False)
+    # Decouple from User as login is not required for drivers
+    full_name = models.CharField(max_length=100, default="Unknown Driver")
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=15, default="0000000000")
+    age = models.IntegerField(blank=True, null=True)
+    license_no = models.CharField(max_length=50, blank=True, null=True)
+    license_expiry = models.DateField(blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    is_available = models.BooleanField(default=True)
     rating = models.FloatField(default=5.0)
+    trips = models.IntegerField(default=0)
+    earnings = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.user.username} - Driver"
+        return self.full_name
 
 class Car(models.Model):
     driver = models.ForeignKey(DriverProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='cars')
-    name = models.CharField(max_length=100)
+    brand = models.CharField(max_length=50, default="Toyota")
+    model = models.CharField(max_length=50, default="Innova")
+    name = models.CharField(max_length=100, blank=True) # Combined name for legacy
     image = models.URLField(blank=True, null=True)
     
     SEAT_CHOICES = ((4, '4 Seater'), (6, '6 Seater'), (7, '7 Seater'))
@@ -32,8 +43,13 @@ class Car(models.Model):
     price_per_km = models.IntegerField(default=15)
     status = models.CharField(max_length=20, default='available')
 
+    def save(self, *args, **kwargs):
+        if self.brand and self.model:
+            self.name = f"{self.brand} {self.model}"
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.name} ({self.tier})"
+        return f"{self.brand} {self.model} ({self.tier})"
 
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')

@@ -40,8 +40,7 @@ class UserViewSet(viewsets.ModelViewSet):
             phone=phone,
             role=role
         )
-        if role == 'driver':
-            DriverProfile.objects.create(user=user)
+        # Drivers are now created separately as profiles by the admin (no login required)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 class DriverProfileViewSet(viewsets.ModelViewSet):
